@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aurum Revenue Atlas</title>
+    <meta
+      name="description"
+      content="Aurum Revenue Atlas allocates limited budget across high-intent offers using a continuous knapsack model."
+    />
+    <meta name="theme-color" content="#050505" />
+    <meta property="og:title" content="Aurum Revenue Atlas" />
+    <meta
+      property="og:description"
+      content="A luxury revenue allocation console built with semantic HTML, CSS, and JavaScript."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Aurum Revenue Atlas",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web"
+      }
+    </script>
+
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg-0: #050505;
+        --bg-1: #0d0d10;
+        --panel: rgba(255, 255, 255, 0.08);
+        --panel-strong: rgba(255, 255, 255, 0.14);
+        --text: #f5f1e8;
+        --muted: rgba(245, 241, 232, 0.72);
+        --gold: #d4af37;
+        --gold-soft: rgba(212, 175, 55, 0.18);
+        --success: #79ffb2;
+        --danger: #ff7d7d;
+        --radius: 24px;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+        --font-display: "Cormorant Garamond", "Times New Roman", serif;
+        --font-body: "Avenir Next", "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        font-family: var(--font-body);
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(212, 175, 55, 0.16),
+            transparent 30%
+          ),
+          radial-gradient(
+            circle at top right,
+            rgba(95, 141, 255, 0.12),
+            transparent 28%
+          ),
+          linear-gradient(135deg, var(--bg-0), var(--bg-1) 48%, #11101a);
+      }
+
+      .skip-link {
+        position: absolute;
+        left: -999px;
+        top: auto;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      }
+
+      .skip-link:focus {
+        position: fixed;
+        left: 1rem;
+        top: 1rem;
+        width: auto;
+        height: auto;
+        padding: 0.75rem 1rem;
+        background: #ffffff;
+        color: #000000;
+        z-index: 999;
+      }
+
+      .shell {
+        width: min(1180px, calc(100% - 2.5rem));
+        margin-inline: auto;
+      }
+
+      header.site-bar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        background: rgba(5, 5, 5, 0.55);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .site-bar .inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.9rem 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text);
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        width: 2.2rem;
+        height: 2.2rem;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #f7e7b0, var(--gold));
+        color: #171204;
+        font-weight: 800;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.2),
+          0 10px 30px rgba(212, 175, 55, 0.25);
+      }
+
+      .nav {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .nav a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+
+      .nav a:hover,
+      .nav a:focus-visible {
+        color: var(--text);
+      }
+
+      .hero {
+        padding: 6rem 0 3rem;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+        gap: 2rem;
+        align-items: stretch;
+      }
+
+      .eyebrow {
+        margin: 0 0 1rem;
+        color: var(--gold);
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+      }
+
+      h1 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(3rem, 7vw, 6.5rem);
+        line-height: 0.94;
+        letter-spacing: -0.03em;
+      }
+
+      .hero-copy .lead {
+        margin: 1.4rem 0 0;
+        max-width: 34ch;
+        color: var(--muted);
+        font-size: 1.08rem;
+        line-height: 1.6;
+      }
+
+      .panel {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.1),
+          rgba(255, 255, 255, 0.055)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: var(--shadow);
+        border-radius: var(--radius);
+        padding: 1.6rem;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+      }
+
+      .form-panel h2,
+      .results h2,
+      .panel h2 {
+        margin: 0 0 1rem;
+        font-size: 1.1rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .field {
+        display: grid;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      label {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      input,
+      select {
+        width: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(0, 0, 0, 0.28);
+        color: var(--text);
+        border-radius: 14px;
+        padding: 0.95rem 1rem;
+        font: inherit;
+        outline-color: var(--gold);
+      }
+
+      button.cta {
+        appearance: none;
+        border: 0;
+        width: 100%;
+        padding: 1rem 1.2rem;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #f6e27a, var(--gold) 55%, #8f6b17);
+        color: #191203;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+        box-shadow: 0 16px 40px rgba(212, 175, 55, 0.28);
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease;
+      }
+
+      button.cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 50px rgba(212, 175, 55, 0.36);
+      }
+
+      button.cta:focus-visible {
+        outline: 3px solid #ffffff;
+        outline-offset: 3px;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.8rem;
+        margin: 1.2rem 0;
+      }
+
+      .metric {
+        background: rgba(0, 0, 0, 0.22);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
+        padding: 1rem;
+      }
+
+      .metric .label {
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      .metric .value {
+        margin-top: 0.4rem;
+        font-size: 1.4rem;
+        font-weight: 700;
+      }
+
+      .result-list {
+        margin: 0;
+        padding-left: 1.1rem;
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .result-list li {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .result-list strong {
+        color: var(--text);
+      }
+
+      .offer-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1.2rem;
+      }
+
+      .offer-card {
+        position: relative;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.22);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 22px;
+        padding: 1.2rem;
+        min-height: 180px;
+      }
+
+      .offer-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.09),
+          transparent 40%,
+          rgba(212, 175, 55, 0.16)
+        );
+        opacity: 0.8;
+        pointer-events: none;
+      }
+
+      .offer-card h3 {
+        margin: 0 0 0.75rem;
+        font-size: 1.05rem;
+      }
+
+      .offer-card .meta {
+        display: grid;
+        gap: 0.45rem;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .badge {
+        display: inline-flex;
+        margin-top: 0.9rem;
+        padding: 0.4rem 0.65rem;
+        border-radius: 999px;
+        background: var(--gold-soft);
+        color: var(--gold);
+        border: 1px solid rgba(212, 175, 55, 0.28);
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .section {
+        padding: 3rem 0 5rem;
+      }
+
+      .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 1rem;
+        margin-bottom: 1.4rem;
+      }
+
+      .section-heading h2 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 4vw, 3.5rem);
+      }
+
+      .section-heading p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 52ch;
+      }
+
+      .status {
+        min-height: 1.4rem;
+        margin-top: 0.8rem;
+        color: var(--danger);
+      }
+
+      .status.ok {
+        color: var(--success);
+      }
+
+      .footer {
+        padding: 2.5rem 0 4rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: var(--muted);
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(24px);
+        transition:
+          opacity 0.6s ease,
+          transform 0.6s ease;
+      }
+
+      .reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 960px) {
+        .hero-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .offer-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .metrics {
+          grid-template-columns: 1fr;
+        }
+
+        .nav {
+          display: none;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        .reveal {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+
+        button.cta,
+        .panel {
+          transition: none;
+        }
+      }
+    </style>
+
+    <noscript>
+      <style>
+        .reveal {
+          opacity: 1;
+          transform: none;
+        }
+      </style>
+    </noscript>
+  </head>
+
+  <body id="top">
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="site-bar">
+      <div class="shell inner">
+        <a class="brand" href="#top">
+          <span class="brand-mark" aria-hidden="true">A</span>
+          Aurum Revenue Atlas
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a href="#optimizer">Optimizer</a>
+          <a href="#catalog">Catalog</a>
+          <a href="#readme">README</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero shell" aria-labelledby="hero-title">
+        <div class="hero-grid">
+          <div class="hero-copy reveal">
+            <p class="eyebrow">Luxury growth allocation</p>
+            <h1 id="hero-title">
+              Close more revenue with one decisive budget move.
+            </h1>
+            <p class="lead">
+              Aurum Revenue Atlas allocates a limited budget across high-intent
+              offers using a continuous knapsack model. It ranks positions by
+              value density, fills full allocations, then clips the final
+              fractional position.
+            </p>
+          </div>
+
+          <div class="panel form-panel reveal" id="optimizer">
+            <h2>Budget optimizer</h2>
+
+            <form id="budget-form" novalidate>
+              <div class="field">
+                <label for="budget">Available budget</label>
+                <input
+                  id="budget"
+                  name="budget"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  step="0.01"
+                  value="10"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="objective">Objective</label>
+                <select id="objective" name="objective">
+                  <option value="revenue" selected>
+                    Maximize projected revenue
+                  </option>
+                  <option value="balanced">Maximize balanced exposure</option>
+                </select>
+              </div>
+
+              <button class="cta" type="submit">Deploy allocation</button>
+              <p
+                id="form-status"
+                class="status"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </form>
+
+            <div class="metrics" aria-label="Allocation summary">
+              <div class="metric">
+                <div class="label">Projected revenue</div>
+                <div class="value" id="metric-value">0</div>
+              </div>
+              <div class="metric">
+                <div class="label">Allocated budget</div>
+                <div class="value" id="metric-weight">0</div>
+              </div>
+              <div class="metric">
+                <div class="label">Positions</div>
+                <div class="value" id="metric-count">0</div>
+              </div>
+            </div>
+
+            <ol id="result-list" class="result-list" aria-live="polite"></ol>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="section shell"
+        id="catalog"
+        aria-labelledby="catalog-title"
+      >
+        <div class="section-heading reveal">
+          <h2 id="catalog-title">Offer catalog</h2>
+          <p>
+            Each card exposes the unit weight and projected value used by the
+            allocation algorithm.
+          </p>
+        </div>
+        <div id="offer-grid" class="offer-grid"></div>
+      </section>
+
+      <section class="section shell" id="readme" aria-labelledby="readme-title">
+        <div class="panel reveal">
+          <h2 id="readme-title">README</h2>
+          <p>
+            Aurum Revenue Atlas is a single-page allocation console. The
+            frontend combines semantic HTML, CSS custom properties, and vanilla
+            JavaScript. The optimizer sorts offers by value-to-weight ratio,
+            consumes full positions until capacity is exhausted, then applies a
+            fractional take to the final position.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="shell">
+        Production scaffold: index.html, api/main.py, api/requirements.txt,
+        src/types.ts, src/java/ContinuousKnapsackOptimizer.java, README.md
+      </div>
+    </footer>
+
+    <script>
+      (() => {
+        "use strict";
+
+        const CATALOG = [
+          { name: "Private Search", weight: 3.8, value: 36 },
+          { name: "Prestige Social", weight: 5.4, value: 43 },
+          { name: "Heritage Email", weight: 3.6, value: 90 },
+          { name: "Concierge Retargeting", weight: 2.4, value: 45 },
+          { name: "Display Reserve", weight: 4.0, value: 30 },
+          { name: "Affiliate Vault", weight: 2.5, value: 56 },
+          { name: "Creator Salon", weight: 3.7, value: 67 },
+          { name: "Direct Atelier", weight: 3.0, value: 95 },
+          { name: "Strategic Alliance", weight: 5.9, value: 98 }
+        ];
+
+        const currency = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+          maximumFractionDigits: 2
+        });
+
+        const number = new Intl.NumberFormat("en-US", {
+          maximumFractionDigits: 2
+        });
+
+        const els = {
+          form: document.getElementById("budget-form"),
+          budget: document.getElementById("budget"),
+          objective: document.getElementById("objective"),
+          status: document.getElementById("form-status"),
+          metricValue: document.getElementById("metric-value"),
+          metricWeight: document.getElementById("metric-weight"),
+          metricCount: document.getElementById("metric-count"),
+          resultList: document.getElementById("result-list"),
+          offerGrid: document.getElementById("offer-grid")
+        };
+
+        const ratio = (item) =>
+          item.weight > 0 ? item.value / item.weight : 0;
+
+        function optimize(items, capacity) {
+          const sorted = [...items].sort((a, b) => ratio(b) - ratio(a));
+          let remaining = capacity;
+          let totalValue = 0;
+          let totalWeight = 0;
+          const selections = [];
+
+          for (const item of sorted) {
+            if (remaining <= 0) break;
+            if (item.weight <= 0) continue;
+
+            const takeWeight = Math.min(item.weight, remaining);
+            const fraction = takeWeight / item.weight;
+            const takeValue = item.value * fraction;
+
+            selections.push({
+              name: item.name,
+              weight: takeWeight,
+              value: takeValue,
+              fraction
+            });
+
+            totalWeight += takeWeight;
+            totalValue += takeValue;
+            remaining -= takeWeight;
+          }
+
+          return { totalValue, totalWeight, selections };
+        }
+
+        function applyObjective(items, objective) {
+          if (objective === "balanced") {
+            return items.map((item) => ({
+              ...item,
+              value: item.value * 0.92 + Math.min(item.weight, 4) * 2
+            }));
+          }
+
+          return items;
+        }
+
+        function setStatus(message, ok = false) {
+          els.status.textContent = message;
+          els.status.classList.toggle("ok", ok);
+        }
+
+        function renderMetrics(result) {
+          els.metricValue.textContent = currency.format(result.totalValue);
+          els.metricWeight.textContent = number.format(result.totalWeight);
+          els.metricCount.textContent = String(result.selections.length);
+        }
+
+        function renderResults(result) {
+          els.resultList.textContent = "";
+          const fragment = document.createDocumentFragment();
+
+          for (const selection of result.selections) {
+            const li = document.createElement("li");
+            const strong = document.createElement("strong");
+
+            strong.textContent = selection.name;
+            li.appendChild(strong);
+            li.append(
+              ` — allocated ${number.format(selection.weight)} at ${currency.format(selection.value)} (${number.format(selection.fraction * 100)}% of position)`
+            );
+
+            fragment.appendChild(li);
+          }
+
+          els.resultList.appendChild(fragment);
+        }
+
+        function persistState() {
+          try {
+            localStorage.setItem("aurum:budget", els.budget.value);
+            localStorage.setItem("aurum:objective", els.objective.value);
+          } catch (error) {}
+        }
+
+        function restoreState() {
+          try {
+            const savedBudget = localStorage.getItem("aurum:budget");
+            const savedObjective = localStorage.getItem("aurum:objective");
+
+            if (savedBudget !== null) els.budget.value = savedBudget;
+            if (savedObjective !== null) els.objective.value = savedObjective;
+          } catch (error) {}
+        }
+
+        function runAllocation() {
+          const capacity = Number.parseFloat(els.budget.value);
+
+          if (!Number.isFinite(capacity) || capacity < 0) {
+            setStatus("Enter a non-negative budget.", false);
+            return;
+          }
+
+          const adjusted = applyObjective(CATALOG, els.objective.value);
+          const result = optimize(adjusted, capacity);
+
+          renderMetrics(result);
+          renderResults(result);
+          setStatus(
+            `Allocation deployed across ${result.selections.length} positions.`,
+            true
+          );
+          persistState();
+        }
+
+        function renderCatalog() {
+          const fragment = document.createDocumentFragment();
+          const sorted = [...CATALOG].sort((a, b) => ratio(b) - ratio(a));
+
+          for (const item of sorted) {
+            const card = document.createElement("article");
+            card.className = "offer-card reveal";
+
+            const heading = document.createElement("h3");
+            heading.textContent = item.name;
+
+            const meta = document.createElement("div");
+            meta.className = "meta";
+
+            const weight = document.createElement("span");
+            weight.textContent = `Weight: ${number.format(item.weight)}`;
+
+            const value = document.createElement("span");
+            value.textContent = `Projected value: ${currency.format(item.value)}`;
+
+            const ratioLine = document.createElement("span");
+            ratioLine.textContent = `Ratio: ${number.format(ratio(item))}`;
+
+            const badge = document.createElement("span");
+            badge.className = "badge";
+            badge.textContent = ratio(item) >= 18 ? "Priority" : "Standard";
+
+            meta.append(weight, value, ratioLine);
+            card.append(heading, meta, badge);
+
+            fragment.appendChild(card);
+          }
+
+          els.offerGrid.appendChild(fragment);
+        }
+
+        function initReveal() {
+          const nodes = document.querySelectorAll(".reveal");
+
+          if (!("IntersectionObserver" in window)) {
+            nodes.forEach((node) => node.classList.add("is-visible"));
+            return;
+          }
+
+          const observer = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add("is-visible");
+                  observer.unobserve(entry.target);
+                }
+              }
+            },
+            { threshold: 0.18 }
+          );
+
+          nodes.forEach((node) => observer.observe(node));
+        }
+
+        restoreState();
+        renderCatalog();
+        initReveal();
+
+        els.form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          runAllocation();
+        });
+
+        runAllocation();
+      })();
+    </script>
+  </body>
+</html>
